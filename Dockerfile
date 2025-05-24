@@ -13,24 +13,23 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-install pdo pdo_mysql zip gd
 
-# Clonar GLPI dentro del DocumentRoot por defecto
-RUN git clone https://github.com/glpi-project/glpi.git /var/www/html
-
-# Establecer permisos apropiados para Apache
-RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 755 /var/www/html
-
-# Habilitar mod_rewrite
+# Habilitar mod_rewrite de Apache
 RUN a2enmod rewrite
 
-# Asegurar acceso desde Apache
-RUN printf '%s\n' \
-"<VirtualHost *:80>" \
-"    DocumentRoot /var/www/html" \
-"    <Directory /var/www/html>" \
-"        Options Indexes FollowSymLinks" \
-"        AllowOverride All" \
-"        Require all granted" \
-"    </Directory>" \
-"</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+# Clonar GLPI directamente en /var/www/html
+WORKDIR /var/www/html
+RUN git clone https://github.com/glpi-project/glpi . 
 
+# Configurar Apache para que use /public como DocumentRoot
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
+# Establecer permisos adecuados
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
