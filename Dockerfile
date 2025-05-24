@@ -20,10 +20,10 @@ RUN mkdir glpi public
 
 # Descargar GLPI 10.0.16
 # Descargar GLPI 10.0.18
-RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.18/glpi-10.0.18.tgz && \
-    tar -xzf glpi-10.0.18.tgz && \
-    rm glpi-10.0.18.tgz && \
-    mv glpi-10.0.18 glpi && \
+RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
+    tar -xzf glpi-10.0.15.tgz && \
+    rm glpi-10.0.15.tgz && \
+    mv glpi-10.0.15 glpi && \
     chown -R www-data:www-data glpi
 
 # Crear index.php en /public que apunta a /glpi/index.php
