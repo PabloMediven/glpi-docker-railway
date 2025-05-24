@@ -5,7 +5,7 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     buildCommand: |
-      git clone https://github.com/glpi-project/glpi.git /var/www/html/glpi
+      git clone https://github.com/glpi-project/glpi.git /var/www/html
     envVars:
       - key: MYSQL_HOST
         value: mysql.railway.internal
