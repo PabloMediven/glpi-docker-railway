@@ -19,7 +19,10 @@ WORKDIR /var/www/html
 RUN wget -O glpi.tgz https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
     tar -xvzf glpi.tgz && \
     rm glpi.tgz && \
-    mv glpi/* . && rm -rf glpi && \
+    mkdir public && \
+    mv glpi/public/* public/ && \
+    mv glpi/files glpi/config glpi/install ./ && \
+    rm -rf glpi && \
     chown -R www-data:www-data . && chmod -R 755 .
 
 # Entrypoint para instalar dependencias de GLPI
