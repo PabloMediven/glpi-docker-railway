@@ -16,6 +16,7 @@ RUN git clone https://github.com/glpi-project/glpi.git .
 
 # Instalar dependencias PHP de GLPI
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+RUN php bin/console dependencies install --no-interaction
 
 # Configurar Apache para que apunte a /public
 RUN echo '<VirtualHost *:80>\n\
