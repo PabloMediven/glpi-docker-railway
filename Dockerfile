@@ -16,7 +16,7 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Descargar GLPI (ajustado a la versión estable más reciente)
 WORKDIR /var/www/html
-RUN wget https://github.com/glpi-project/glpi/releases/latest/download/glpi.tgz && \
+RUN wget -O glpi.tgz https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
     tar -xvzf glpi.tgz && \
     rm glpi.tgz && \
     mv glpi/* . && rm -rf glpi && \
