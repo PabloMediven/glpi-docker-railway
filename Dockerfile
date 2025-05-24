@@ -24,11 +24,13 @@ RUN chown -R www-data:www-data /var/www/html \
 RUN a2enmod rewrite
 
 # Asegurar acceso desde Apache
-RUN echo "<VirtualHost *:80>
-    DocumentRoot /var/www/html
-    <Directory /var/www/html>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+RUN printf '%s\n' \
+"<VirtualHost *:80>" \
+"    DocumentRoot /var/www/html" \
+"    <Directory /var/www/html>" \
+"        Options Indexes FollowSymLinks" \
+"        AllowOverride All" \
+"        Require all granted" \
+"    </Directory>" \
+"</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+
