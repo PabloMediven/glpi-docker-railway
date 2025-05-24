@@ -11,30 +11,31 @@ RUN apt-get update && apt-get install -y \
 # Activar mod_rewrite
 RUN a2enmod rewrite
 
-# Configuración PHP para cookies seguras
+# Configurar PHP para seguridad de sesión
 RUN echo "session.cookie_httponly=On" > /usr/local/etc/php/conf.d/session.ini
 
-# Crear estructura de carpetas
+# Crear estructura
 WORKDIR /var/www
 RUN mkdir glpi public
 
-# Descargar GLPI
-RUN wget -O glpi.tgz https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
-    tar -xvzf glpi.tgz && \
-    rm glpi.tgz && \
-    mv glpi-10.0.15 glpi && \
+# Descargar GLPI 10.0.16
+RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.16/glpi-10.0.16.tgz && \
+    tar -xzf glpi-10.0.16.tgz && \
+    rm glpi-10.0.16.tgz && \
+    mv glpi-10.0.16/* glpi/ && \
+    rm -rf glpi-10.0.16 && \
     chown -R www-data:www-data glpi
 
-
-# Crear index.php en public que apunta a glpi
+# Crear index.php en /public que apunta a /glpi/index.php
 RUN echo "<?php require __DIR__ . '/../glpi/index.php';" > public/index.php
 
-# Crear .htaccess (puede ser vacío si usás reglas en apache.conf)
+# .htaccess opcional (vacío o con reglas)
 RUN echo "" > public/.htaccess
 
-# Configurar Apache para servir desde /var/www/public
+# Apache config
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
+# Entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
