@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: glpi
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MYSQL_HOST
+        value: mysql.railway.internal
+      - key: MYSQL_DATABASE
+        value: railway
+      - key: MYSQL_USER
+        value: root
+      - key: MYSQL_PASSWORD
+        value: HWrMLtkDBJbAhKCFpdWnfYfHuPDwaLUY
