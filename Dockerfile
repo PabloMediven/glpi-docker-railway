@@ -24,8 +24,8 @@ RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-
     tar -xzf glpi-10.0.15.tgz && \
     rm glpi-10.0.15.tgz && \
     mv glpi-10.0.15 glpi && \
-    chown -R www-data:www-data glpi
-
+    chown -R www-data:www-data . && chmod -R 755 .
+    
 # Crear index.php en /public que apunta a /glpi/index.php
 RUN echo "<?php require __DIR__ . '/../glpi/index.php';" > public/index.php
 
