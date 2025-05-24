@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Instalar extensiones necesarias
+# Instalar dependencias necesarias
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -16,7 +16,4 @@ RUN apt-get update && apt-get install -y \
 # Habilitar mod_rewrite
 RUN a2enmod rewrite
 
-# Establecer el DocumentRoot
-RUN echo "DocumentRoot /var/www/html/glpi" > /etc/apache2/sites-enabled/000-default.conf
-
-# El buildCommand en render.yaml hará el clon del repositorio GLPI
+# NO modificar el DocumentRoot aquí
