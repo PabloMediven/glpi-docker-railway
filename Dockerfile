@@ -16,7 +16,7 @@ RUN echo "session.cookie_httponly=On" > /usr/local/etc/php/conf.d/session.ini
 
 # Crear estructura de carpetas
 WORKDIR /var/www
-RUN mkdir glpi public
+RUN mkdir public
 
 # Descargar y extraer GLPI (versión actualizada si querés)
 RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
