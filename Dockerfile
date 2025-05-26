@@ -21,9 +21,8 @@ RUN mkdir glpi public
 # Descargar GLPI 10.0.16
 # Descargar GLPI 10.0.18
 RUN wget -O glpi.tgz https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
-    tar -xvzf glpi.tgz && \
-    rm glpi.tgz && \
-    mv glpi/* . && rm -rf glpi && \
+    tar -xzf glpi.tgz && \
+    mv glpi/* . && \
     chown -R www-data:www-data . && chmod -R 755 .
 
 #RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
