@@ -20,11 +20,8 @@ RUN mkdir public
 
 # Descargar y extraer GLPI (versión actualizada si querés)
 RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz
-RUN tar -xzf glpi-10.0.15.tgz
-RUN rm glpi-10.0.15.tgz
-RUN mv glpi glpi-back && \
-    mv glpi-back/* glpi && \
-    rm -rf glpi-back && \
+RUN tar -xzf glpi-10.0.15.tgz && \
+    rm glpi-10.0.15.tgz && \
     chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 
 
