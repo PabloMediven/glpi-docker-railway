@@ -22,9 +22,9 @@ RUN mkdir glpi public
 RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
     tar -xzf glpi-10.0.15.tgz && \
     rm glpi-10.0.15.tgz && \
-    mv glpi-10.0.15/* glpi/ && \
-    rm -rf glpi-10.0.15 && \
+    mv glpi /var/www/glpi && \
     chown -R www-data:www-data /var/www && chmod -R 755 /var/www
+
 
 # Crear archivo index.php en public/ que apunte a GLPI
 RUN echo "<?php\nrequire __DIR__ . '/../glpi/index.php';" > /var/www/public/index.php
