@@ -27,10 +27,10 @@ RUN tar -xzf glpi-10.0.15.tgz && \
 
 
 # Crear archivo index.php en public/ que apunte a GLPI
-RUN echo "<?php\nrequire __DIR__ . '/../glpi/index.php';" > /var/www/public/index.php
+RUN echo "<?php\n// Redirige todo a GLPI correctamente\nrequire __DIR__ . '/../glpi/index.php';" > /var/www/public/index.php
 
 # (Opcional) Crear .htaccess vacío en public
-RUN echo "RewriteEngine On\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteRule ^(.*)$ /index.php [QSA,L]" > /var/www/public/.htaccess
+RUN echo "" > /var/www/public/.htaccess
 
 # Apache config para usar public/ como DocumentRoot
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
