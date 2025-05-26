@@ -22,8 +22,11 @@ RUN mkdir public
 RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz
 RUN tar -xzf glpi-10.0.15.tgz
 RUN rm glpi-10.0.15.tgz
-RUN mv glpi /var/www/glpi && \
+RUN mv glpi glpi-back && \
+    mv glpi-back/* glpi && \
+    rm -rf glpi-back && \
     chown -R www-data:www-data /var/www && chmod -R 755 /var/www
+
 
 
 # Crear archivo index.php en public/ que apunte a GLPI
