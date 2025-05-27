@@ -20,10 +20,16 @@ RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-
     tar -xzf glpi-10.0.15.tgz && rm glpi-10.0.15.tgz
 
 # Mover config y files a ubicaciones seguras
-RUN mv /var/www/glpi/config/* /etc/glpi/ && \
-    mv /var/www/glpi/files/* /var/lib/glpi/ && \
-    rm -rf /var/www/glpi/config /var/www/glpi/files && \
-    mkdir /var/www/glpi/config /var/www/glpi/files
+RUN if [ -d /var/www/glpi/config ]; then \
+        cp -r /var/www/glpi/config/* /etc/glpi/ 2>/dev/null || true; \
+        rm -rf /var/www/glpi/config; \
+    fi && \
+    if [ -d /var/www/glpi/files ]; then \
+        cp -r /var/www/glpi/files/* /var/lib/glpi/ 2>/dev/null || true; \
+        rm -rf /var/www/glpi/files; \
+    fi && \
+    mkdir -p /var/www/glpi/config /var/www/glpi/files
+
 
 # Crear archivo downstream.php que use los paths externos
 RUN echo "<?php\n\
