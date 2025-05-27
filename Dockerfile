@@ -45,8 +45,8 @@ define('GLPI_LOG_DIR', '/var/log/glpi');" > /etc/glpi/local_define.php
 
 # Crear carpeta pública y redirección
 RUN mkdir -p /var/www/public && \
-    echo \"<?php\nheader('Location: /glpi/');\nexit;\" > /var/www/public/index.php && \
-    echo \"\" > /var/www/public/.htaccess
+    printf "<?php\nheader('Location: /glpi/');\nexit;\n" > /var/www/public/index.php && \
+    touch /var/www/public/.htaccess
 
 # Apache config personalizado
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
