@@ -1,27 +1,46 @@
 FROM php:8.2-apache
 
-# Requisitos del sistema
+# Instala extensiones necesarias
 RUN apt-get update && apt-get install -y \
-    unzip \
-    wget \
-    libicu-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libxml2-dev \
-    libldap2-dev \
-    libmariadb-dev \
-    libmariadb-dev-compat \
-    mariadb-client \
-    git \
-    && docker-php-ext-install intl pdo pdo_mysql gd xml ldap opcache
+    unzip wget libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libxml2-dev git \
+    && docker-php-ext-install mysqli pdo pdo_mysql zip xml gd \
+    && a2enmod rewrite
 
-# Instalar Composer (opcional pero útil)
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Configura el DocumentRoot a /var/www/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/public
 
-# Crear rutas seguras
-RUN mkdir -p /etc/glpi /var/lib/glpi /var/log/glpi /var/www/glpi /var/www/public
+# Reescribe el archivo de Apache para que use /var/www/public como raíz
+RUN sed -i "s|/var/www/html|/var/www/public|g" /etc/apache2/sites-available/000-default.conf
 
-# Crear subdirectorios requeridos por GLPI
+# Descarga y descomprime GLPI
+WORKDIR /var/www
+RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
+    tar -xzf glpi-10.0.15.tgz && \
+    mv glpi glpi && \
+    rm glpi-10.0.15.tgz
+
+# Crea directorios externos recomendados por FHS
+RUN mkdir -p /etc/glpi /var/lib/glpi /var/log/glpi
+
+# Mueve config y files a ubicaciones seguras
+RUN mv /var/www/glpi/config/* /etc/glpi/ && \
+    mv /var/www/glpi/files/* /var/lib/glpi/ && \
+    rm -rf /var/www/glpi/config /var/www/glpi/files && \
+    mkdir /var/www/glpi/config /var/www/glpi/files
+
+# Copia downstream.php para cargar config externa
+RUN echo "<?php\n\
+define('GLPI_CONFIG_DIR', '/etc/glpi/');\n\
+if (file_exists(GLPI_CONFIG_DIR . '/local_define.php')) {\n\
+   require_once GLPI_CONFIG_DIR . '/local_define.php';\n\
+}" > /var/www/glpi/inc/downstream.php
+
+# Crea local_define.php con rutas externas
+RUN echo "<?php\n\
+define('GLPI_VAR_DIR', '/var/lib/glpi');\n\
+define('GLPI_LOG_DIR', '/var/log/glpi');" > /etc/glpi/local_define.php
+
+# Crea subdirectorios necesarios en /var/lib/glpi
 RUN mkdir -p /var/lib/glpi/_cache \
     /var/lib/glpi/_cron \
     /var/lib/glpi/_dumps \
@@ -34,42 +53,13 @@ RUN mkdir -p /var/lib/glpi/_cache \
     /var/lib/glpi/_tmp \
     /var/lib/glpi/_uploads
 
-# Descargar y extraer GLPI
-WORKDIR /var/www/glpi
-RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
-    tar -xzf glpi-10.0.15.tgz --strip-components=1 && \
-    rm glpi-10.0.15.tgz
+# Da permisos al usuario de Apache (www-data)
+RUN chown -R www-data:www-data /var/lib/glpi /var/log/glpi /etc/glpi
 
-# Mover configuraciones y archivos a rutas seguras
-RUN mv config/* /etc/glpi/ && \
-    mv files/* /var/lib/glpi/ || true && \
-    rm -rf config files && \
-    mkdir config files
+# Crea carpeta pública y redirige a GLPI
+RUN mkdir -p /var/www/public && \
+    echo "<?php\nheader('Location: /glpi/');\nexit;" > /var/www/public/index.php && \
+    echo "" > /var/www/public/.htaccess
 
-# Redirección desde /var/www/public al GLPI real
-RUN echo "<?php\nheader('Location: /glpi/');\nexit;" > /var/www/public/index.php && \
-    touch /var/www/public/.htaccess
-
-# Definiciones locales para rutas seguras
-RUN echo "<?php\n"\
-"define('GLPI_CONFIG_DIR', '/etc/glpi/');\n"\
-"define('GLPI_VAR_DIR', '/var/lib/glpi');\n"\
-"define('GLPI_LOG_DIR', '/var/log/glpi');\n"\
-"?>" > /etc/glpi/local_define.php
-
-# Configuración de PHP para seguridad de sesiones
-RUN echo "session.cookie_httponly=On" > /usr/local/etc/php/conf.d/security.ini
-
-# Permisos correctos
-RUN chown -R www-data:www-data /etc/glpi /var/lib/glpi /var/log/glpi /var/www/glpi && \
-    chmod -R 750 /etc/glpi /var/lib/glpi /var/log/glpi
-
-# Copiar configuración de Apache
-COPY apache.conf /etc/apache2/sites-available/000-default.conf
-
-# Activar módulo rewrite
-RUN a2enmod rewrite
-
-# Exponer puerto y arrancar
+# Exponer puerto por defecto de Apache
 EXPOSE 80
-CMD ["apache2-foreground"]
