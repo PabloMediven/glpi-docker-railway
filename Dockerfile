@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Instalar dependencias necesarias para PHP
+# Instalar dependencias necesarias
 RUN apt-get update && apt-get install -y \
     git unzip wget \
     libpng-dev libjpeg-dev libfreetype6-dev \
@@ -11,30 +11,41 @@ RUN apt-get update && apt-get install -y \
 # Activar mod_rewrite en Apache
 RUN a2enmod rewrite
 
-# Configurar PHP para mayor seguridad
-RUN echo "session.cookie_httponly=On" > /usr/local/etc/php/conf.d/session.ini
+# Crear carpetas necesarias para configuración segura
+RUN mkdir -p /etc/glpi /var/lib/glpi /var/log/glpi
 
-# Crear estructura de carpetas
+# Descargar y extraer GLPI
 WORKDIR /var/www
-RUN mkdir public
+RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
+    tar -xzf glpi-10.0.15.tgz && rm glpi-10.0.15.tgz
 
-# Descargar y extraer GLPI (versión actualizada si querés)
-RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz
-RUN tar -xzf glpi-10.0.15.tgz && \
-    rm glpi-10.0.15.tgz && \
-    chown -R www-data:www-data /var/www && chmod -R 755 /var/www
+# Mover config y files a ubicaciones seguras
+RUN mv /var/www/glpi/config/* /etc/glpi/ && \
+    mv /var/www/glpi/files/* /var/lib/glpi/ && \
+    rm -rf /var/www/glpi/config /var/www/glpi/files && \
+    mkdir /var/www/glpi/config /var/www/glpi/files
 
+# Crear archivo downstream.php que use los paths externos
+RUN echo "<?php\n\
+define('GLPI_CONFIG_DIR', '/etc/glpi/');\n\
+if (file_exists(GLPI_CONFIG_DIR . '/local_define.php')) {\n\
+    require_once GLPI_CONFIG_DIR . '/local_define.php';\n\
+}" > /var/www/glpi/inc/downstream.php
 
+# Crear archivo local_define.php para configurar los paths
+RUN echo "<?php\n\
+define('GLPI_VAR_DIR', '/var/lib/glpi');\n\
+define('GLPI_LOG_DIR', '/var/log/glpi');" > /etc/glpi/local_define.php
 
-# Crear archivo index.php en public/ que apunte a GLPI
-RUN echo "<?php\nheader('Location: /glpi/');\nexit;" > /var/www/glpi/public/index.php
-# (Opcional) Crear .htaccess vacío en public
-RUN echo "" > /var/www/public/.htaccess
+# Crear carpeta pública y redirección
+RUN mkdir -p /var/www/public && \
+    echo \"<?php\nheader('Location: /glpi/');\nexit;\" > /var/www/public/index.php && \
+    echo \"\" > /var/www/public/.htaccess
 
-# Apache config para usar public/ como DocumentRoot
+# Apache config personalizado
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Entrypoint personalizado
+# Entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
