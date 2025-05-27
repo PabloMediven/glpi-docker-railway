@@ -14,6 +14,10 @@ RUN a2enmod rewrite
 # Crear carpetas necesarias para configuración segura
 RUN mkdir -p /etc/glpi /var/lib/glpi /var/log/glpi
 
+RUN chown -R www-data:www-data /etc/glpi /var/lib/glpi /var/log/glpi && \
+    chmod -R 750 /etc/glpi /var/lib/glpi /var/log/glpi
+
+
 # Descargar y extraer GLPI
 WORKDIR /var/www
 RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
