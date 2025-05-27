@@ -14,10 +14,11 @@ RUN sed -i "s|/var/www/html|/var/www/public|g" /etc/apache2/sites-available/000-
 
 # Descarga y descomprime GLPI
 WORKDIR /var/www
+
 RUN wget -q https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz && \
     tar -xzf glpi-10.0.15.tgz && \
-    mv glpi glpi && \
     rm glpi-10.0.15.tgz
+
 
 # Crea directorios externos recomendados por FHS
 RUN mkdir -p /etc/glpi /var/lib/glpi /var/log/glpi
