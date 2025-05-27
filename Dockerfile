@@ -27,7 +27,7 @@ RUN tar -xzf glpi-10.0.15.tgz && \
 
 
 # Crear archivo index.php en public/ que apunte a GLPI
-RUN echo "<?php\n// Redirige todo a GLPI correctamente\nrequire __DIR__ . '/../glpi/index.php';" > /var/www/public/index.php
+RUN echo "<?php\n// Redirige todo a GLPI correctamente\nrequire __DIR__ . '/../glpi/install/install.php';" > /var/www/public/index.php
 
 # (Opcional) Crear .htaccess vacío en public
 RUN echo "" > /var/www/public/.htaccess
