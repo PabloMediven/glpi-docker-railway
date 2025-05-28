@@ -1,21 +1,33 @@
-# Usa una imagen base de Alpine + Apache + PHP
-FROM php:8.1-apache
+FROM php:8.2-apache
 
-# Instala extensiones necesarias para GLPI
+# 1. Actualizamos repos y dependencias necesarias
 RUN apt-get update && apt-get install -y \
+    unzip wget curl gnupg2 lsb-release \
     libpng-dev libjpeg-dev libfreetype6-dev \
-    libxml2-dev zip unzip git mariadb-client \
-    && docker-php-ext-install pdo pdo_mysql mysqli gd xml intl mbstring opcache \
+    libxml2-dev libzip-dev zlib1g-dev \
+    libicu-dev libonig-dev mariadb-server \
+    mariadb-client git supervisor \
     && apt-get clean
 
-# Descarga GLPI
-RUN curl -L https://github.com/glpi-project/glpi/releases/download/10.0.15/glpi-10.0.15.tgz | tar xz -C /var/www/html --strip-components=1
+# 2. Configurar Apache
+RUN a2enmod rewrite
 
-# Asigna permisos adecuados
-RUN chown -R www-data:www-data /var/www/html
+# 3. Instalar extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mysqli gd xml intl mbstring opcache
 
-# Expone el puerto 80
+# 4. Descargar GLPI
+ENV GLPI_VERSION=10.0.14
+RUN wget -O /tmp/glpi.tgz https://github.com/glpi-project/glpi/releases/download/${GLPI_VERSION}/glpi-${GLPI_VERSION}.tgz \
+    && tar -xvzf /tmp/glpi.tgz -C /var/www/html \
+    && rm /tmp/glpi.tgz \
+    && chown -R www-data:www-data /var/www/html/glpi
+
+# 5. Configurar supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# 6. Exponer puerto
 EXPOSE 80
 
-# Comando de inicio
-CMD ["apache2-foreground"]
+# 7. Comando de entrada
+CMD ["/usr/bin/supervisord", "-n"]
