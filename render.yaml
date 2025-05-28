@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: glpi
-    env: docker
-    dockerfilePath: ./Dockerfile
-    plan: free

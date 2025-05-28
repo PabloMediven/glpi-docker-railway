@@ -1,33 +1,26 @@
-FROM php:8.2-apache
+FROM debian:bookworm
 
-# 1. Actualizamos repos y dependencias necesarias
-RUN apt-get update && apt-get install -y \
-    unzip wget curl gnupg2 lsb-release \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libxml2-dev libzip-dev zlib1g-dev \
-    libicu-dev libonig-dev mariadb-server \
-    mariadb-client git supervisor \
-    && apt-get clean
+# Dependencias básicas
+RUN apt update && apt install -y \
+    apache2 libapache2-mod-php php php-mysql mariadb-client \
+    php-curl php-mbstring php-xml php-zip php-gd php-intl php-bz2 php-ldap php-apcu \
+    wget unzip nano supervisor curl php-soap php-xmlrpc php-bcmath php-imap \
+    && apt clean
 
-# 2. Configurar Apache
+# Descargar GLPI
+RUN wget https://github.com/glpi-project/glpi/releases/download/10.0.14/glpi-10.0.14.tgz \
+    && tar -xvzf glpi-10.0.14.tgz -C /var/www/html/ \
+    && rm glpi-10.0.14.tgz
+
+# Permisos
+RUN chown -R www-data:www-data /var/www/html/glpi
+
+# Apache config
+COPY glpi.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 
-# 3. Instalar extensiones PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql mysqli gd xml intl mbstring opcache
-
-# 4. Descargar GLPI
-ENV GLPI_VERSION=10.0.14
-RUN wget -O /tmp/glpi.tgz https://github.com/glpi-project/glpi/releases/download/${GLPI_VERSION}/glpi-${GLPI_VERSION}.tgz \
-    && tar -xvzf /tmp/glpi.tgz -C /var/www/html \
-    && rm /tmp/glpi.tgz \
-    && chown -R www-data:www-data /var/www/html/glpi
-
-# 5. Configurar supervisor
+# Supervisord para iniciar Apache
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 6. Exponer puerto
 EXPOSE 80
-
-# 7. Comando de entrada
-CMD ["/usr/bin/supervisord", "-n"]
+CMD ["/usr/bin/supervisord"]
