@@ -2,6 +2,5 @@ services:
   - type: web
     name: glpi
     env: docker
-    plan: free
     dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    plan: free
