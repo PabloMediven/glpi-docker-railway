@@ -17,9 +17,5 @@ RUN chown -R www-data:www-data /var/www/html
 # Expone el puerto 80
 EXPOSE 80
 
-# Copia un script de entrada que espere a MySQL (opcional)
-COPY wait-for-mysql.sh /wait-for-mysql.sh
-RUN chmod +x /wait-for-mysql.sh
-
 # Comando de inicio
 CMD ["apache2-foreground"]
